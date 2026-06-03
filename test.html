@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Conexión Supabase</title>
+<style>
+body{font-family:system-ui;padding:20px;background:#f0f4f1;color:#1a2b1a}
+h2{color:#0f2e14}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid #cddacf}
+.ok{color:#2f8638;font-weight:600}
+.err{color:#b83232;font-weight:600}
+.info{color:#1a5496;font-size:13px;margin-top:4px}
+button{background:#17431c;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%}
+pre{font-size:11px;background:#f5f5f5;padding:10px;border-radius:6px;overflow-x:auto;margin-top:8px;white-space:pre-wrap;word-break:break-all}
+</style>
+</head>
+<body>
+<h2>🔍 Diagnóstico de conexión</h2>
+<p style="font-size:13px;color:#6b8070;margin-bottom:16px">Abre esta página en Chrome del iPad para diagnosticar el error</p>
+<div class="card" id="result"><p>Toca el botón para probar la conexión...</p></div>
+<button onclick="testAll()">Probar conexión con Supabase</button>
+
+<script>
+const SUPA='https://hqofhixgtarnrjkogdyq.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxb2ZoaXhndGFybnJqa29nZHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDI2NjcsImV4cCI6MjA5NjAxODY2N30.0phSRjcWXczHFaFUg2uYJADZWOYJDUWIdgFJ0BKCHJA';
+const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
+
+async function testTable(name){
+  try{
+    const r=await fetch(`${SUPA}/rest/v1/${name}?select=count&limit=1`,{headers:H});
+    const txt=await r.text();
+    return{ok:r.ok,status:r.status,body:txt};
+  }catch(e){return{ok:false,status:'Error de red',body:e.message}}
+}
+
+async function testAll(){
+  const div=document.getElementById('result');
+  div.innerHTML='<p>Probando...</p>';
+  const tables=['animales','tratamientos','partos','fotos_animal'];
+  let html='';
+  for(const t of tables){
+    const res=await testTable(t);
+    html+=`<div style="margin-bottom:10px">
+      <span class="${res.ok?'ok':'err'}">${res.ok?'✅':'❌'} ${t}</span>
+      <span style="font-size:12px;color:#6b8070;margin-left:8px">HTTP ${res.status}</span>
+      <pre>${res.body.slice(0,200)}</pre>
+    </div>`;
+  }
+  div.innerHTML=html;
+}
+</script>
+</body>
+</html>
