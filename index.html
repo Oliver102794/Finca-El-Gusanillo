@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="El Gusanillo">
+<meta name="theme-color" content="#133d18">
+<title>Finca El Gusanillo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root{
+  --g9:#071a09;--g8:#0f2e14;--g7:#17431c;--g6:#1e5824;--g5:#266e2d;--g4:#2f8638;--g3:#52a85e;--g2:#8fcc98;--g1:#c5e8c9;--g0:#edf7ef;
+  --a:#b8760f;--al:#fef3dc;--r:#b83232;--rl:#fdeaea;--b:#1a5496;--bl:#e6f0fb;--br:#5c3310;--brl:#f5ede3;
+  --bg:#f2f6f3;--sur:#ffffff;--sur2:#edf2ee;--sur3:#e4ebe5;
+  --tx:#182b1a;--tx2:#3d5440;--tx3:#6b8070;
+  --bd:#cddacf;--bd2:#b0c8b4;
+  --rr:16px;--rs:10px;--rx:6px;
+  --sh:0 1px 3px rgba(0,40,10,.06),0 2px 12px rgba(0,40,10,.04);
+  --shl:0 4px 24px rgba(0,40,10,.1);
+  --fs:'DM Sans',system-ui,sans-serif;
+  --fse:'DM Serif Display',Georgia,serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0d1a0f;--sur:#162019;--sur2:#1e2d20;--sur3:#263329;
+    --tx:#d4e8d6;--tx2:#9ab89d;--tx3:#6a8a6d;
+    --bd:#2a3d2c;--bd2:#3a5040;
+    --g8:#1e5824;--g7:#266e2d;--g1:#1a3d1e;--g0:#162019;
+    --al:#2a2010;--a:#d4982a;--rl:#2a1010;--r:#e05555;--bl:#0f1e30;--b:#4a8fd4;--brl:#1e150a;--br:#c47a40;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{font-family:var(--fs);background:var(--bg);color:var(--tx);min-height:100%;min-height:100dvh;font-size:15px;line-height:1.5;overscroll-behavior:none}
+
+/* Shell */
+.shell{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:540px;margin:0 auto;position:relative}
+.topbar{background:var(--g8);color:#fff;padding:env(safe-area-inset-top,0) 0 0;flex-shrink:0;z-index:40}
+.topbar-inner{padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-family:var(--fse);font-size:22px;font-weight:400;letter-spacing:.2px}
+.topbar-sub{font-size:11px;opacity:.65;margin-top:1px;display:flex;align-items:center;gap:5px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#52a85e;flex-shrink:0}
+.sync-dot.offline{background:#e0a020;animation:none}
+.sync-dot.online{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.topbar-actions{display:flex;gap:8px}
+.icon-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;transition:.15s}
+.icon-btn:active{background:rgba(255,255,255,.2)}
+
+.scroller{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.scroller::-webkit-scrollbar{display:none}
+.content{padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 70px)}
+
+.bottom-nav{background:var(--sur);border-top:1px solid var(--bd);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0);position:relative;z-index:40}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px 7px;color:var(--tx3);font-size:10px;font-weight:500;gap:3px;cursor:pointer;border:none;background:none;transition:.15s;border-top:2.5px solid transparent;letter-spacing:.1px}
+.nb i{font-size:21px;transition:.15s}
+.nb.active{color:var(--g5);border-top-color:var(--g4)}
+.nb.active i{color:var(--g4)}
+
+/* Pages */
+.page{display:none}
+.page.active{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Cards */
+.card{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rr);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.card-ttl{font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--tx3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rr);padding:14px 14px 14px 18px;box-shadow:var(--sh);position:relative;overflow:hidden;cursor:default}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.kpi.green::before{background:var(--g4)}
+.kpi.amber::before{background:var(--a)}
+.kpi.red::before{background:var(--r)}
+.kpi.blue::before{background:var(--b)}
+.kpi-n{font-family:var(--fse);font-size:34px;color:var(--tx);line-height:1}
+.kpi-l{font-size:11px;color:var(--tx3);margin-top:5px;font-weight:500;letter-spacing:.2px}
+.kpi-s{font-size:10px;color:var(--g4);margin-top:3px}
+
+/* Bars */
+.bar-item{margin-bottom:10px}
+.bar-item:last-child{margin-bottom:0}
+.bar-h{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bar-l{color:var(--tx2);font-weight:500}
+.bar-c{color:var(--tx3)}
+.bar-track{height:8px;background:var(--sur2);border-radius:20px;overflow:hidden}
+.bar-fill{height:100%;border-radius:20px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* Animal list */
+.aitem{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rr);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--sh);transition:.12s;-webkit-user-select:none}
+.aitem:active{background:var(--sur2);transform:scale(.99)}
+.aav{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--fse);font-size:15px;flex-shrink:0}
+.aav.g{background:var(--g1);color:var(--g8)}
+.aav.a{background:var(--al);color:var(--a)}
+.aav.b{background:var(--bl);color:var(--b)}
+.aav.br{background:var(--brl);color:var(--br)}
+.abody{flex:1;min-width:0}
+.anum{font-size:13px;font-weight:600;color:var(--tx)}
+.adesc{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.ameta{display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap}
+
+/* Badges */
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.bdg-g{background:var(--g1);color:var(--g8)}
+.bdg-a{background:var(--al);color:var(--a)}
+.bdg-b{background:var(--bl);color:var(--b)}
+.bdg-br{background:var(--brl);color:var(--br)}
+.bdg-r{background:var(--rl);color:var(--r)}
+.bdg-gr{background:var(--sur2);color:var(--tx3)}
+
+/* Search */
+.srch{position:relative;margin-bottom:12px}
+.srch i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:17px;pointer-events:none}
+.srch input{padding-left:38px}
+
+/* Filter tabs */
+.ftabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.ftabs::-webkit-scrollbar{display:none}
+.ftab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--bd);background:var(--sur);color:var(--tx3);cursor:pointer;white-space:nowrap;transition:.12s;flex-shrink:0}
+.ftab.active{background:var(--g7);color:#fff;border-color:var(--g7)}
+
+/* Forms */
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--sur);color:var(--tx);font-family:var(--fs);font-size:14px;transition:.15s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--g3);box-shadow:0 0 0 3px rgba(46,134,56,.15)}
+textarea{resize:vertical;min-height:64px;line-height:1.6}
+input[type=file]{padding:8px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:5px;letter-spacing:.2px}
+.fg .hint{font-size:11px;color:var(--tx3);margin-top:3px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fsec{margin-bottom:18px}
+.fsec-ttl{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.req{color:var(--r);margin-left:2px}
+
+/* Buttons */
+.btn{width:100%;padding:13px;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.12s;letter-spacing:.2px}
+.btn:active{transform:scale(.99)}
+.btn-p{background:var(--g7);color:#fff}
+.btn-p:active{background:var(--g8)}
+.btn-s{background:none;color:var(--g6);border:1.5px solid var(--g3);margin-top:8px}
+.btn-s:active{background:var(--g0)}
+.btn-d{background:var(--r);color:#fff;padding:10px 16px;width:auto;font-size:13px;border-radius:var(--rx)}
+
+/* Ficha */
+.fhero{background:var(--g8);border-radius:var(--rr) var(--rr) 0 0;padding:20px 18px 16px;color:#fff}
+.fhero-n{font-family:var(--fse);font-size:46px;line-height:1}
+.fhero-d{font-size:14px;opacity:.75;margin-top:3px}
+.fhero-tags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.ftag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9)}
+.fbody{background:var(--sur);border:1px solid var(--bd);border-top:none;border-radius:0 0 var(--rr) var(--rr);margin-bottom:12px}
+.frow-i{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 16px;border-bottom:1px solid var(--bd)}
+.frow-i:last-child{border-bottom:none}
+.fkey{font-size:12px;color:var(--tx3);font-weight:500}
+.fval{font-size:13px;font-weight:500;text-align:right;max-width:58%;color:var(--tx)}
+
+/* Timeline items */
+.titem{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--bd)}
+.titem:last-child{border-bottom:none}
+.tline{display:flex;flex-direction:column;align-items:center;gap:0}
+.tdot{width:10px;height:10px;border-radius:50%;background:var(--r);flex-shrink:0;margin-top:4px}
+.tdot.green{background:var(--g4)}
+.tconn{width:1px;flex:1;background:var(--bd);min-height:14px;margin-top:2px}
+.tmed{font-size:13px;font-weight:600;color:var(--tx)}
+.tdet{font-size:12px;color:var(--tx3);margin-top:2px;line-height:1.5}
+
+/* Parto item */
+.pitem{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}
+.pitem:last-child{border-bottom:none}
+.pcria{font-size:13px;font-weight:600;color:var(--tx)}
+.pmeta{font-size:11px;color:var(--tx3);margin-top:2px}
+
+/* Section header inside modal */
+.shdr{font-family:var(--fse);font-size:18px;font-weight:400;margin-bottom:10px;color:var(--tx)}
+.shdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mini-btn{font-size:12px;padding:5px 12px;border-radius:20px;border:none;font-weight:600;cursor:pointer;transition:.12s}
+.mini-btn-g{background:var(--g1);color:var(--g8)}
+.mini-btn-r{background:var(--rl);color:var(--r)}
+
+/* Empty */
+.empty{text-align:center;padding:40px 20px;color:var(--tx3)}
+.empty i{font-size:46px;display:block;margin-bottom:10px;opacity:.4}
+.empty p{font-size:14px;line-height:1.7}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--g8);color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;box-shadow:var(--shl);max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--r)}
+
+/* Modal */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.moverlay.open{display:flex}
+.modal{background:var(--sur);border-radius:var(--rr) var(--rr) 0 0;width:100%;max-width:540px;max-height:92dvh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom,16px);box-shadow:var(--shl)}
+.modal::-webkit-scrollbar{display:none}
+.mhandle{width:36px;height:4px;background:var(--bd2);border-radius:2px;margin:12px auto 0;cursor:pointer}
+.mpad{padding:16px 18px 20px}
+.mttl{font-family:var(--fse);font-size:22px;font-weight:400;margin-bottom:16px;color:var(--tx)}
+
+/* Export */
+.exp-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd)}
+.exp-row:last-child{border-bottom:none}
+.exp-info .ett{font-size:13px;font-weight:600;color:var(--tx)}
+.exp-info .esb{font-size:11px;color:var(--tx3);margin-top:2px}
+.exp-btn{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--g1);color:var(--g8);transition:.12s;display:flex;align-items:center;gap:5px}
+.exp-btn:active{background:var(--g2)}
+
+/* Alert items */
+.alitem{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);align-items:flex-start}
+.alitem:last-child{border-bottom:none}
+.alico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.albody .att{font-size:13px;font-weight:600;color:var(--tx)}
+.albody .asb{font-size:11px;color:var(--tx3);margin-top:2px}
+
+/* Offline banner */
+.offline-banner{display:none;background:var(--a);color:#fff;text-align:center;font-size:12px;font-weight:500;padding:6px 14px}
+.offline-banner.show{display:block}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="offline-banner" id="offline-banner"><i class="ti ti-wifi-off" style="font-size:13px;vertical-align:-1px"></i> Sin conexión — trabajando offline</div>
+    <div class="topbar-inner">
+      <div>
+        <h1>El Gusanillo</h1>
+        <div class="topbar-sub"><div class="sync-dot online" id="sync-dot"></div><span id="sync-txt">Cargando...</span></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" onclick="goPage('exportar',4)" aria-label="Exportar"><i class="ti ti-download"></i></button>
+        <button class="icon-btn" onclick="openModal('modal-parto')" aria-label="Registrar parto"><i class="ti ti-heart-plus"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="scroller">
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="card">
+          <div class="card-ttl"><i class="ti ti-chart-bar"></i>Hato por clasificación</div>
+          <div id="clasif-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl"><i class="ti ti-users"></i>Por propietario</div>
+          <div id="prop-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl"><i class="ti ti-bell"></i>Alertas</div>
+          <div id="alertas"></div>
+        </div>
+      </div>
+
+      <!-- ANIMALES -->
+      <div id="page-animales" class="page">
+        <div class="srch"><i class="ti ti-search"></i><input type="search" id="srch-inp" placeholder="Buscar por número, descripción..." oninput="renderAnimales()"></div>
+        <div class="ftabs">
+          <button class="ftab active" onclick="setFilter('Todos',this)">Todos</button>
+          <button class="ftab" onclick="setFilter('Vaca',this)">Vacas</button>
+          <button class="ftab" onclick="setFilter('Toro',this)">Toros</button>
+          <button class="ftab" onclick="setFilter('Novilla',this)">Novillas</button>
+          <button class="ftab" onclick="setFilter('Ternera',this)">Terneras</button>
+          <button class="ftab" onclick="setFilter('Ternero',this)">Terneros</button>
+          <button class="ftab" onclick="setFilter('Novillo',this)">Novillos</button>
+        </div>
+        <div id="animal-list"></div>
+      </div>
+
+      <!-- REGISTRAR -->
+      <div id="page-registrar" class="page">
+        <div class="card">
+          <div class="fsec">
+            <div class="fsec-ttl">Identificación</div>
+            <div class="frow">
+              <div class="fg"><label># Animal<span class="req">*</span></label><input type="number" id="f-num" placeholder="Ej: 61" min="1" inputmode="numeric"></div>
+              <div class="fg"><label>Propietario<span class="req">*</span></label>
+                <select id="f-prop" onchange="toggleNewProp(this)">
+                  <option value="">Seleccionar...</option>
+                  <option>Joel</option><option>Esteban</option><option>Oliver</option>
+                  <option value="__new__">+ Nuevo propietario</option>
+                </select>
+              </div>
+            </div>
+            <div id="f-prop-new-wrap" style="display:none" class="fg"><label>Nombre del propietario</label><input type="text" id="f-prop-new" placeholder="Nombre completo"></div>
+            <div class="frow">
+              <div class="fg"><label>Clasificación<span class="req">*</span></label>
+                <select id="f-clasif">
+                  <option value="">Tipo...</option>
+                  <option>Vaca</option><option>Toro</option><option>Novilla</option><option>Novillo</option><option>Ternera</option><option>Ternero</option>
+                </select>
+              </div>
+              <div class="fg"><label>Sexo</label>
+                <select id="f-sexo"><option value="">Sexo...</option><option>Hembra</option><option>Macho</option></select>
+              </div>
+            </div>
+          </div>
+          <div class="fsec">
+            <div class="fsec-ttl">Fechas importantes</div>
+            <div class="frow">
+              <div class="fg"><label>Nacimiento</label><input type="date" id="f-nac"></div>
+              <div class="fg"><label>Descorne</label><input type="date" id="f-desc-fecha"></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label>Destete</label><input type="date" id="f-dest"></div>
+              <div class="fg"><label>Estado descorne</label>
+                <select id="f-desc-est"><option value="">Estado...</option><option>Descornado</option><option>Sin descornar</option><option>Pendiente</option></select>
+              </div>
+            </div>
+          </div>
+          <div class="fsec">
+            <div class="fsec-ttl">Genealogía y descripción</div>
+            <div class="frow">
+              <div class="fg"><label># Madre</label><input type="text" id="f-madre" placeholder="Ej: 17" inputmode="numeric"></div>
+              <div class="fg"><label>Padre / Toro</label><input type="text" id="f-padre" placeholder="Ej: 850"></div>
+            </div>
+            <div class="fg"><label>Descripción / color</label><input type="text" id="f-desc" placeholder="Ej: Ternera blanca manchada"></div>
+            <div class="fg"><label>Notas</label><textarea id="f-notas" placeholder="Origen, observaciones..."></textarea></div>
+          </div>
+          <button class="btn btn-p" onclick="guardarAnimal()"><i class="ti ti-device-floppy"></i>Guardar animal</button>
+        </div>
+      </div>
+
+      <!-- TRATAMIENTOS -->
+      <div id="page-tratamientos" class="page">
+        <div class="card">
+          <div class="shdr">Registrar tratamiento</div>
+          <div class="frow">
+            <div class="fg"><label># Animal<span class="req">*</span></label><input type="number" id="t-num" placeholder="Nº" min="1" inputmode="numeric"></div>
+            <div class="fg"><label>Fecha<span class="req">*</span></label><input type="date" id="t-fecha"></div>
+          </div>
+          <div class="fg"><label>Medicamento<span class="req">*</span></label><input type="text" id="t-med" placeholder="Ej: Penicilina, Dectomax..."></div>
+          <div class="frow">
+            <div class="fg"><label>Dosis</label><input type="text" id="t-dosis" placeholder="Ej: 7cc"></div>
+            <div class="fg"><label>Tipo</label>
+              <select id="t-tipo"><option value="">Tipo...</option><option>Curativo</option><option>Preventivo</option><option>Vitamínico</option><option>Antiparasitario</option><option>Otro</option></select>
+            </div>
+          </div>
+          <div class="fg"><label>Diagnóstico / Motivo<span class="req">*</span></label><textarea id="t-motivo" placeholder="Describe el problema..."></textarea></div>
+          <div class="fg"><label>Aplicado por</label><input type="text" id="t-aplicado" placeholder="Veterinario o persona"></div>
+          <button class="btn btn-p" onclick="guardarTrat()"><i class="ti ti-plus"></i>Registrar tratamiento</button>
+        </div>
+        <div class="card">
+          <div class="card-ttl"><i class="ti ti-history"></i>Historial reciente</div>
+          <div id="trat-list"></div>
+        </div>
+      </div>
+
+      <!-- EXPORTAR -->
+      <div id="page-exportar" class="page">
+        <div class="card">
+          <div class="shdr" style="margin-bottom:6px">Exportar datos</div>
+          <p style="font-size:13px;color:var(--tx3);margin-bottom:16px;line-height:1.7">Descarga tus datos en CSV para abrir en Excel o Google Sheets, o guarda un backup completo.</p>
+          <div class="exp-row">
+            <div class="exp-info"><div class="ett">Animales (CSV)</div><div class="esb">Registro completo del hato</div></div>
+            <button class="exp-btn" onclick="exportCSV('animales')"><i class="ti ti-download" style="font-size:13px"></i>Descargar</button>
+          </div>
+          <div class="exp-row">
+            <div class="exp-info"><div class="ett">Tratamientos (CSV)</div><div class="esb">Historial médico completo</div></div>
+            <button class="exp-btn" onclick="exportCSV('tratamientos')"><i class="ti ti-download" style="font-size:13px"></i>Descargar</button>
+          </div>
+          <div class="exp-row">
+            <div class="exp-info"><div class="ett">Partos (CSV)</div><div class="esb">Historial de partos</div></div>
+            <button class="exp-btn" onclick="exportCSV('partos')"><i class="ti ti-download" style="font-size:13px"></i>Descargar</button>
+          </div>
+          <div class="exp-row">
+            <div class="exp-info"><div class="ett">Backup completo (JSON)</div><div class="esb">Para restaurar en otro dispositivo</div></div>
+            <button class="exp-btn" onclick="exportBackup()"><i class="ti ti-archive" style="font-size:13px"></i>Backup</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="shdr" style="margin-bottom:6px">Restaurar backup</div>
+          <p style="font-size:13px;color:var(--tx3);margin-bottom:12px;line-height:1.7">Importa un JSON de respaldo. <strong>Reemplaza todos los datos actuales.</strong></p>
+          <div class="fg"><label>Seleccionar archivo .json</label><input type="file" id="restore-file" accept=".json" onchange="importBackup(this)"></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl"><i class="ti ti-info-circle"></i>Cómo funciona offline</div>
+          <ol style="font-size:13px;color:var(--tx2);line-height:2.2;padding-left:18px">
+            <li>Instala la app en tu iPad (botón compartir → "Agregar a pantalla de inicio")</li>
+            <li>Úsala sin internet en la finca — todo se guarda en el dispositivo</li>
+            <li>Al tener WiFi, exporta el CSV y ábrelo en Excel o Google Sheets</li>
+            <li>Haz un backup JSON periódicamente como respaldo</li>
+          </ol>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nb active" onclick="goPage('dashboard',0)" aria-label="Dashboard"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+    <button class="nb" onclick="goPage('animales',1)" aria-label="Animales"><i class="ti ti-list-details"></i>Animales</button>
+    <button class="nb" onclick="goPage('registrar',2)" aria-label="Agregar"><i class="ti ti-circle-plus"></i>Agregar</button>
+    <button class="nb" onclick="goPage('tratamientos',3)" aria-label="Tratamientos"><i class="ti ti-vaccine"></i>Tratam.</button>
+    <button class="nb" onclick="goPage('exportar',4)" aria-label="Exportar"><i class="ti ti-download"></i>Exportar</button>
+  </nav>
+</div>
+
+<!-- MODAL FICHA -->
+<div class="moverlay" id="modal-ficha">
+  <div class="modal">
+    <div class="mhandle" onclick="closeModal('modal-ficha')"></div>
+    <div class="mpad" id="modal-ficha-body"></div>
+  </div>
+</div>
+
+<!-- MODAL PARTO -->
+<div class="moverlay" id="modal-parto">
+  <div class="modal">
+    <div class="mhandle" onclick="closeModal('modal-parto')"></div>
+    <div class="mpad">
+      <div class="mttl">Registrar parto</div>
+      <div class="frow">
+        <div class="fg"><label># Madre<span class="req">*</span></label><input type="number" id="p-madre" placeholder="Nº vaca" min="1" inputmode="numeric"></div>
+        <div class="fg"><label>Fecha parto<span class="req">*</span></label><input type="date" id="p-fecha"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label># Cría<span class="req">*</span></label><input type="number" id="p-cria" placeholder="Nº asignado" min="1" inputmode="numeric"></div>
+        <div class="fg"><label>Sexo cría</label>
+          <select id="p-sexo"><option value="">Sexo...</option><option>Hembra</option><option>Macho</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>Observaciones</label><textarea id="p-obs" placeholder="Complicaciones, peso, estado..."></textarea></div>
+      <button class="btn btn-p" onclick="guardarParto()"><i class="ti ti-plus"></i>Registrar parto</button>
+      <button class="btn btn-s" onclick="closeModal('modal-parto')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DB ────────────────────────────────────────────────────
+const DB={
+  get(k){try{return JSON.parse(localStorage.getItem('fg_'+k)||'[]')}catch(e){return[]}},
+  set(k,v){localStorage.setItem('fg_'+k,JSON.stringify(v));syncStatus()},
+  getAll(){return{animales:this.get('animales'),tratamientos:this.get('tratamientos'),partos:this.get('partos')}},
+  setAll(d){if(d.animales)this.set('animales',d.animales);if(d.tratamientos)this.set('tratamientos',d.tratamientos);if(d.partos)this.set('partos',d.partos)}
+};
+
+// ── Offline detection ─────────────────────────────────────
+function updateOnline(){
+  const on=navigator.onLine;
+  document.getElementById('offline-banner').classList.toggle('show',!on);
+  const dot=document.getElementById('sync-dot');
+  dot.className='sync-dot '+(on?'online':'offline');
+}
+window.addEventListener('online',()=>{updateOnline();toast('Conexión restaurada')});
+window.addEventListener('offline',()=>{updateOnline();toast('Sin conexión — guardando localmente','err')});
+updateOnline();
+
+function syncStatus(){
+  const a=DB.get('animales').length,t=DB.get('tratamientos').length,p=DB.get('partos').length;
+  document.getElementById('sync-txt').textContent=a+' animales · '+t+' tratam. · '+p+' partos';
+}
+
+// ── Service Worker ────────────────────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(()=>{
+      console.log('SW registrado');
+    }).catch(e=>console.log('SW error:',e));
+  });
+}
+
+// ── Nav ───────────────────────────────────────────────────
+function goPage(id,idx){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelector('.scroller').scrollTop=0;
+  if(id==='dashboard')renderDash();
+  if(id==='animales')renderAnimales();
+  if(id==='tratamientos'){renderTratList();document.getElementById('t-fecha').value=today()}
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function today(){return new Date().toISOString().slice(0,10)}
+function fmtD(s){if(!s)return'—';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'})}
+function edad(nac){
+  if(!nac)return'—';
+  const d=Math.floor((Date.now()-new Date(nac+'T12:00:00').getTime())/86400000);
+  if(d<0)return'—';
+  const y=Math.floor(d/365),m=Math.floor((d%365)/30);
+  if(y===0&&m===0)return'Recién nacido';
+  if(y===0)return m+'m';
+  return y+'a '+m+'m';
+}
+function avCls(c){return{Vaca:'g',Toro:'br',Novilla:'b',Novillo:'b',Ternera:'a',Ternero:'a'}[c]||'g'}
+function bdgCls(c){return{Vaca:'bdg-g',Toro:'bdg-br',Novilla:'bdg-b',Novillo:'bdg-b',Ternera:'bdg-a',Ternero:'bdg-a'}[c]||'bdg-gr'}
+function avLtr(a){return{Toro:'♂',Vaca:'♀'}[a.clasif]||String(a.num).slice(-2)}
+
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+(type==='err'?'err':'');
+  t.classList.add('show');clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function toggleNewProp(s){document.getElementById('f-prop-new-wrap').style.display=s.value==='__new__'?'block':'none'}
+
+// ── Dashboard ─────────────────────────────────────────────
+function renderDash(){
+  const A=DB.get('animales'),T=DB.get('tratamientos'),P=DB.get('partos');
+  const total=A.length,vacas=A.filter(a=>a.clasif==='Vaca').length;
+  const crias=A.filter(a=>a.clasif==='Ternero'||a.clasif==='Ternera').length;
+  document.getElementById('kpi-grid').innerHTML=`
+    <div class="kpi green"><div class="kpi-n">${total}</div><div class="kpi-l">Total animales</div><div class="kpi-s">en el hato</div></div>
+    <div class="kpi green"><div class="kpi-n">${vacas}</div><div class="kpi-l">Vacas</div><div class="kpi-s">${A.filter(a=>a.clasif==='Novilla').length} novillas</div></div>
+    <div class="kpi amber"><div class="kpi-n">${crias}</div><div class="kpi-l">Crías</div><div class="kpi-s">terneros/as</div></div>
+    <div class="kpi red"><div class="kpi-n">${T.length}</div><div class="kpi-l">Tratamientos</div><div class="kpi-s">${P.length} partos</div></div>`;
+
+  const cm={};A.forEach(a=>{cm[a.clasif]=(cm[a.clasif]||0)+1});
+  const mx=Math.max(...Object.values(cm),1);
+  const cc={Vaca:'#2f8638',Toro:'#5c3310',Novilla:'#1a5496',Novillo:'#1a5496',Ternera:'#b8760f',Ternero:'#b8760f'};
+  document.getElementById('clasif-chart').innerHTML=Object.keys(cm).length===0
+    ?'<div class="empty" style="padding:20px"><i class="ti ti-mood-empty"></i><p>Sin animales</p></div>'
+    :Object.entries(cm).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div class="bar-item"><div class="bar-h"><span class="bar-l">${k}</span><span class="bar-c">${v}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/mx*100)}%;background:${cc[k]||'#888'}"></div></div></div>`).join('');
+
+  const pm={};A.forEach(a=>{if(a.prop)pm[a.prop]=(pm[a.prop]||0)+1});
+  const mxp=Math.max(...Object.values(pm),1);
+  const pc=['#1e5824','#1a5496','#b8760f','#6b21a8','#b83232'];
+  document.getElementById('prop-chart').innerHTML=Object.keys(pm).length===0
+    ?'<div style="font-size:13px;color:var(--tx3)">Sin propietarios registrados</div>'
+    :Object.entries(pm).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>`
+      <div class="bar-item"><div class="bar-h"><span class="bar-l">${k}</span><span class="bar-c">${v} animales</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/mxp*100)}%;background:${pc[i%pc.length]}"></div></div></div>`).join('');
+
+  const al=[];
+  A.forEach(a=>{
+    if(a.descEst==='Pendiente')al.push({ic:'ti-scissors',bg:'background:var(--al)',ic_c:'color:var(--a)',tt:'Descorne pendiente',sb:`Animal #${a.num} — ${a.desc||a.clasif}`});
+    if(a.nac){const d=Math.floor((Date.now()-new Date(a.nac+'T12:00:00').getTime())/86400000);if(d<=30&&d>=0)al.push({ic:'ti-baby-carriage',bg:'background:var(--bl)',ic_c:'color:var(--b)',tt:'Cría reciente',sb:`Animal #${a.num} — ${edad(a.nac)}`})}
+  });
+  T.slice(-3).reverse().forEach(t=>al.push({ic:'ti-vaccine',bg:'background:var(--rl)',ic_c:'color:var(--r)',tt:`Tratam. Animal #${t.num}`,sb:`${t.med} · ${fmtD(t.fecha)}`}));
+  document.getElementById('alertas').innerHTML=al.length===0
+    ?'<div style="font-size:13px;color:var(--tx3);padding:6px 0">Sin alertas activas</div>'
+    :al.slice(0,6).map(a=>`<div class="alitem"><div class="alico" style="${a.bg}"><i class="ti ${a.ic}" style="${a.ic_c}"></i></div><div class="albody"><div class="att">${a.tt}</div><div class="asb">${a.sb}</div></div></div>`).join('');
+}
+
+// ── Animales ──────────────────────────────────────────────
+let cFilter='Todos';
+function setFilter(f,btn){
+  cFilter=f;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderAnimales();
+}
+function renderAnimales(){
+  const A=DB.get('animales'),T=DB.get('tratamientos');
+  const q=(document.getElementById('srch-inp')?.value||'').toLowerCase();
+  let list=A.filter(a=>{
+    const mf=cFilter==='Todos'||a.clasif===cFilter;
+    const mq=!q||String(a.num).includes(q)||(a.desc||'').toLowerCase().includes(q)||(a.prop||'').toLowerCase().includes(q);
+    return mf&&mq;
+  }).sort((a,b)=>Number(a.num)-Number(b.num));
+  const c=document.getElementById('animal-list');
+  if(!list.length){c.innerHTML='<div class="empty"><i class="ti ti-mood-empty"></i><p>No hay animales aquí.<br>Usa "Agregar" para registrar el primero.</p></div>';return}
+  c.innerHTML=list.map(a=>{
+    const tc=T.filter(t=>Number(t.num)===Number(a.num)).length;
+    return`<div class="aitem" onclick="verFicha(${a.num})">
+      <div class="aav ${avCls(a.clasif)}">${avLtr(a)}</div>
+      <div class="abody">
+        <div class="anum"># ${a.num}</div>
+        <div class="adesc">${a.desc||'Sin descripción'}</div>
+        <div class="ameta">
+          <span class="bdg ${bdgCls(a.clasif)}">${a.clasif}</span>
+          ${a.prop?`<span class="bdg bdg-gr">${a.prop}</span>`:''}
+          ${tc>0?`<span class="bdg bdg-r"><i class="ti ti-vaccine" style="font-size:10px"></i>${tc}</span>`:''}
+          <span style="font-size:11px;color:var(--tx3)">${edad(a.nac)}</span>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right" style="color:var(--bd2);font-size:16px"></i>
+    </div>`}).join('');
+}
+
+// ── Ficha ─────────────────────────────────────────────────
+function verFicha(num){
+  const A=DB.get('animales'),T=DB.get('tratamientos'),P=DB.get('partos');
+  const a=A.find(x=>Number(x.num)===Number(num));
+  if(!a){toast('Animal no encontrado','err');return}
+  const myT=T.filter(t=>Number(t.num)===Number(num));
+  const myP=P.filter(p=>Number(p.madre)===Number(num));
+
+  const tHTML=myT.length===0?'<p style="font-size:13px;color:var(--tx3);padding:8px 0">Sin tratamientos</p>'
+    :myT.map((t,i)=>`<div class="titem">
+      <div class="tline"><div class="tdot"></div>${i<myT.length-1?'<div class="tconn"></div>':''}</div>
+      <div style="flex:1"><div class="tmed">${t.med}</div>
+      <div class="tdet">${fmtD(t.fecha)}${t.dosis?' · '+t.dosis:''}${t.tipo?' · '+t.tipo:''}</div>
+      <div class="tdet" style="color:var(--tx2)">${t.motivo}</div>
+      ${t.aplicado?`<div class="tdet">Por: ${t.aplicado}</div>`:''}</div></div>`).join('');
+
+  const pHTML=myP.length===0?'<p style="font-size:13px;color:var(--tx3);padding:8px 0">Sin partos registrados</p>'
+    :myP.map(p=>`<div class="pitem">
+      <div><div class="pcria">Cría # ${p.cria}${p.sexo?' — '+p.sexo:''}</div><div class="pmeta">${fmtD(p.fecha)}</div></div>
+      ${p.obs?`<div style="font-size:11px;color:var(--tx3);max-width:45%;text-align:right;line-height:1.5">${p.obs}</div>`:''}</div>`).join('');
+
+  document.getElementById('modal-ficha-body').innerHTML=`
+    <div class="fhero"><div class="fhero-n"># ${a.num}</div><div class="fhero-d">${a.desc||'Sin descripción'}</div>
+      <div class="fhero-tags">
+        ${a.clasif?`<span class="ftag">${a.clasif}</span>`:''}
+        ${a.prop?`<span class="ftag">${a.prop}</span>`:''}
+        ${a.sexo?`<span class="ftag">${a.sexo}</span>`:''}
+        ${edad(a.nac)!=='—'?`<span class="ftag">${edad(a.nac)}</span>`:''}
+      </div>
+    </div>
+    <div class="fbody">
+      <div class="frow-i"><span class="fkey">Nacimiento</span><span class="fval">${fmtD(a.nac)}</span></div>
+      <div class="frow-i"><span class="fkey">Madre</span><span class="fval">${a.madre?'#'+a.madre:'—'}</span></div>
+      <div class="frow-i"><span class="fkey">Padre / Toro</span><span class="fval">${a.padre||'—'}</span></div>
+      <div class="frow-i"><span class="fkey">Descorne</span><span class="fval">${a.descEst||'—'}</span></div>
+      <div class="frow-i"><span class="fkey">F. Descorne</span><span class="fval">${fmtD(a.descFecha)}</span></div>
+      <div class="frow-i"><span class="fkey">F. Destete</span><span class="fval">${fmtD(a.dest)}</span></div>
+      ${a.notas?`<div class="frow-i" style="flex-direction:column;gap:5px"><span class="fkey">Notas</span><span style="font-size:12px;color:var(--tx2);line-height:1.6">${a.notas}</span></div>`:''}
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="shdr-row"><div class="shdr">Partos (${myP.length})</div>
+        <button class="mini-btn mini-btn-g" onclick="abrirParto(${num})"><i class="ti ti-plus" style="font-size:12px"></i> Registrar</button>
+      </div>${pHTML}
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="shdr-row"><div class="shdr">Tratamientos (${myT.length})</div>
+        <button class="mini-btn mini-btn-r" onclick="abrirTrat(${num})"><i class="ti ti-plus" style="font-size:12px"></i> Registrar</button>
+      </div>${tHTML}
+    </div>
+    <button class="btn btn-d" style="width:100%;border-radius:var(--rs)" onclick="if(confirm('¿Eliminar animal #${num}?')){eliminar(${num})}"><i class="ti ti-trash" style="font-size:14px"></i> Eliminar animal</button>`;
+  openModal('modal-ficha');
+}
+
+function abrirParto(num){closeModal('modal-ficha');document.getElementById('p-madre').value=num;document.getElementById('p-fecha').value=today();openModal('modal-parto')}
+function abrirTrat(num){closeModal('modal-ficha');document.getElementById('t-num').value=num;document.getElementById('t-fecha').value=today();goPage('tratamientos',3)}
+function eliminar(num){DB.set('animales',DB.get('animales').filter(a=>Number(a.num)!==Number(num)));closeModal('modal-ficha');renderAnimales();toast('Animal #'+num+' eliminado')}
+
+// ── Guardar animal ─────────────────────────────────────────
+function guardarAnimal(){
+  const num=document.getElementById('f-num').value;
+  let prop=document.getElementById('f-prop').value;
+  const clasif=document.getElementById('f-clasif').value;
+  if(!num||!clasif){toast('Completa los campos obligatorios (*)','err');return}
+  if(prop==='__new__'){
+    prop=document.getElementById('f-prop-new').value.trim();
+    if(!prop){toast('Escribe el nombre del propietario','err');return}
+    const sel=document.getElementById('f-prop');
+    sel.insertBefore(new Option(prop,prop),sel.lastElementChild);
+  }
+  if(!prop){toast('Selecciona un propietario','err');return}
+  const A=DB.get('animales');
+  if(A.find(a=>Number(a.num)===Number(num))){toast('Ya existe el animal #'+num,'err');return}
+  A.push({num:Number(num),prop,clasif,
+    sexo:document.getElementById('f-sexo').value,
+    nac:document.getElementById('f-nac').value,
+    descFecha:document.getElementById('f-desc-fecha').value,
+    dest:document.getElementById('f-dest').value,
+    descEst:document.getElementById('f-desc-est').value,
+    madre:document.getElementById('f-madre').value,
+    padre:document.getElementById('f-padre').value,
+    desc:document.getElementById('f-desc').value,
+    notas:document.getElementById('f-notas').value,
+    reg:today()});
+  DB.set('animales',A);
+  ['f-num','f-nac','f-desc-fecha','f-dest','f-madre','f-padre','f-desc','f-notas'].forEach(id=>document.getElementById(id).value='');
+  ['f-prop','f-clasif','f-sexo','f-desc-est'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  document.getElementById('f-prop-new-wrap').style.display='none';
+  toast('Animal #'+num+' guardado ✓');
+}
+
+// ── Guardar tratamiento ────────────────────────────────────
+function guardarTrat(){
+  const num=document.getElementById('t-num').value,fecha=document.getElementById('t-fecha').value;
+  const med=document.getElementById('t-med').value.trim(),motivo=document.getElementById('t-motivo').value.trim();
+  if(!num||!fecha||!med||!motivo){toast('Completa los campos obligatorios (*)','err');return}
+  const T=DB.get('tratamientos');
+  T.push({num:Number(num),fecha,med,dosis:document.getElementById('t-dosis').value,tipo:document.getElementById('t-tipo').value,motivo,aplicado:document.getElementById('t-aplicado').value});
+  DB.set('tratamientos',T);
+  ['t-num','t-dosis','t-motivo','t-aplicado'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('t-med').value='';
+  document.getElementById('t-tipo').selectedIndex=0;
+  document.getElementById('t-fecha').value=today();
+  renderTratList();toast('Tratamiento registrado para #'+num+' ✓');
+}
+
+function renderTratList(){
+  const T=DB.get('tratamientos');
+  const c=document.getElementById('trat-list');
+  if(!T.length){c.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-vaccine"></i><p>Sin tratamientos</p></div>';return}
+  c.innerHTML=T.slice().reverse().slice(0,15).map((t,i)=>`
+    <div class="titem">
+      <div class="tline"><div class="tdot"></div>${i<Math.min(T.length,15)-1?'<div class="tconn"></div>':''}</div>
+      <div style="flex:1"><div class="tmed">Animal #${t.num} — ${t.med}</div>
+      <div class="tdet">${fmtD(t.fecha)}${t.dosis?' · '+t.dosis:''}${t.tipo?' · '+t.tipo:''}</div>
+      <div class="tdet" style="color:var(--tx2)">${t.motivo}</div></div>
+    </div>`).join('');
+}
+
+// ── Guardar parto ──────────────────────────────────────────
+function guardarParto(){
+  const madre=document.getElementById('p-madre').value,fecha=document.getElementById('p-fecha').value;
+  const cria=document.getElementById('p-cria').value;
+  if(!madre||!fecha||!cria){toast('Completa los campos obligatorios (*)','err');return}
+  const P=DB.get('partos');
+  P.push({madre:Number(madre),fecha,cria:Number(cria),sexo:document.getElementById('p-sexo').value,obs:document.getElementById('p-obs').value});
+  DB.set('partos',P);
+  ['p-madre','p-cria','p-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-sexo').selectedIndex=0;
+  closeModal('modal-parto');
+  toast('Parto registrado — Cría #'+cria+' ✓');
+  renderDash();
+}
+
+// ── Export ─────────────────────────────────────────────────
+function toCSV(rows){
+  if(!rows.length)return'';
+  const h=Object.keys(rows[0]);
+  return[h.join(','),...rows.map(r=>h.map(k=>{const v=r[k]??'';return String(v).includes(',')?`"${v}"`:v}).join(','))].join('\n');
+}
+function dlFile(content,name,mime){
+  const a=document.createElement('a');
+  a.href=`data:${mime};charset=utf-8,\uFEFF`+encodeURIComponent(content);
+  a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function exportCSV(tipo){
+  const d=DB.get(tipo);
+  if(!d.length){toast('No hay datos de '+tipo,'err');return}
+  dlFile(toCSV(d),`finca_${tipo}_${today()}.csv`,'text/csv');
+  toast('Descargando '+tipo+'.csv');
+}
+function exportBackup(){
+  dlFile(JSON.stringify(DB.getAll(),null,2),`finca_backup_${today()}.json`,'application/json');
+  toast('Backup descargado ✓');
+}
+function importBackup(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{try{DB.setAll(JSON.parse(e.target.result));syncStatus();renderDash();toast('Datos restaurados ✓')}catch(err){toast('Archivo inválido','err')}};
+  r.readAsText(f);
+}
+
+// ── Init ───────────────────────────────────────────────────
+document.getElementById('t-fecha').value=today();
+document.getElementById('p-fecha').value=today();
+syncStatus();renderDash();
+</script>
+</body>
+</html>
