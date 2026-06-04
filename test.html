@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Conexión</title>
+<style>
+body{font-family:system-ui;padding:20px;background:#f0f4f1;color:#1a2b1a}
+h2{color:#0f2e14;margin-bottom:16px}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid #cddacf}
+.ok{color:#2f8638;font-weight:600}.err{color:#b83232;font-weight:600}
+pre{font-size:11px;background:#f5f5f5;padding:10px;border-radius:6px;overflow-x:auto;margin-top:8px;white-space:pre-wrap;word-break:break-all}
+button{background:#17431c;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%;margin-bottom:8px}
+button.b2{background:#1a5496}
+</style>
+</head>
+<body>
+<h2>🔍 Diagnóstico de conexión</h2>
+<div class="card" id="result"><p>Toca un botón para probar...</p></div>
+<button onclick="testOld()">Probar con clave antigua (eyJ...)</button>
+<button class="b2" onclick="testNew()">Probar con clave nueva (sb_publishable...)</button>
+<button onclick="testNoCors()" style="background:#5c3310">Probar sin CORS headers</button>
+
+<script>
+const SUPA='https://hqofhixgtarnrjkogdyq.supabase.co';
+const OLD_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxb2ZoaXhndGFybnJqa29nZHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDI2NjcsImV4cCI6MjA5NjAxODY2N30.0phSRjcWXczHFaFUg2uYJADZWOYJDUWIdgFJ0BKCHJA';
+const NEW_KEY='sb_publishable_GFy65ZjoB_o0j5dct4jhSg_1ieOj69o';
+
+async function test(key, label){
+  const div=document.getElementById('result');
+  div.innerHTML='<p>Probando '+label+'...</p>';
+  try{
+    const r=await fetch(`${SUPA}/rest/v1/animales?select=count&limit=1`,{
+      headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json'}
+    });
+    const txt=await r.text();
+    div.innerHTML=`<span class="${r.ok?'ok':'err'}">${r.ok?'✅':'❌'} ${label}</span>
+      <span style="font-size:12px;color:#6b8070;margin-left:8px">HTTP ${r.status}</span>
+      <pre>${txt}</pre>`;
+  }catch(e){
+    div.innerHTML=`<span class="err">❌ Error de red</span><pre>${e.message}\n\nEsto indica que el navegador bloqueó la petición por CORS</pre>`;
+  }
+}
+
+async function testNoCors(){
+  const div=document.getElementById('result');
+  div.innerHTML='<p>Probando modo no-cors...</p>';
+  try{
+    const r=await fetch(`${SUPA}/rest/v1/animales?select=count`,{
+      mode:'no-cors',
+      headers:{'apikey':OLD_KEY,'Authorization':'Bearer '+OLD_KEY}
+    });
+    div.innerHTML=`<span class="ok">✅ Respuesta recibida (opaque)</span><pre>Status: ${r.status} ${r.type}\nEsto confirma que el servidor responde pero CORS bloquea la lectura</pre>`;
+  }catch(e){
+    div.innerHTML=`<span class="err">❌ ${e.message}</span>`;
+  }
+}
+
+function testOld(){test(OLD_KEY,'Clave antigua eyJ...')}
+function testNew(){test(NEW_KEY,'Clave nueva sb_publishable...')}
+</script>
+</body>
+</html>
