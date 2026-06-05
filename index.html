@@ -1006,7 +1006,7 @@ document.getElementById('p-fecha').value=today();
       LC.set('animales',A);LC.set('tratamientos',T);LC.set('partos',P);LC.set('fotos',F);
       setSS('on','Sincronizado ✓');
     }else{setSS('off','Sin conexión')}
-  }catch(e){setSS('off','Error de conexión');console.error(e)}
+  }catch(e){setSS('off','Error: '+e.message.slice(0,50));console.error(e);const d=document.getElementById('alertas');if(d)d.innerHTML='<div style="font-size:12px;color:#b83232;padding:10px;background:#fdeaea;border-radius:8px;word-break:break-all"><strong>Error:</strong> '+e.message+'<br><strong>Online:</strong> '+navigator.onLine+'<br><strong>Supa:</strong> '+SUPA+'</div>';}
   renderDash();
   document.getElementById('loading').classList.add('hide');
 })();
