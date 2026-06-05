@@ -450,46 +450,34 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPA='https://hqofhixgtarnrjkogdyq.supabase.co';
-const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxb2ZoaXhndGFybnJqa29nZHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDI2NjcsImV4cCI6MjA5NjAxODY2N30.0phSRjcWXczHFaFUg2uYJADZWOYJDUWIdgFJ0BKCHJA';
-const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+const PROXY='/.netlify/functions';
 
-// ── Local cache ──────────────────────────────────────────
-const LC={
-  get(k){try{return JSON.parse(localStorage.getItem('fg_'+k)||'[]')}catch(e){return[]}},
-  set(k,v){localStorage.setItem('fg_'+k,JSON.stringify(v))},
-  getPending(){try{return JSON.parse(localStorage.getItem('fg_pending')||'[]')}catch(e){return[]}},
-  addPending(op){const p=this.getPending();p.push(op);localStorage.setItem('fg_pending',JSON.stringify(p))},
-  clearPending(){localStorage.setItem('fg_pending','[]')}
-};
-
-// ── Supabase ─────────────────────────────────────────────
+// ── API via Netlify proxy ────────────────────────────────
 async function sbGet(table,order='num.asc'){
-  const r=await fetch(`${SUPA}/rest/v1/${table}?select=*&order=${order}`,{headers:H});
-  if(!r.ok)throw new Error(r.status);return r.json();
+  const r=await fetch(`${PROXY}/api?table=${table}&order=${order}`);
+  if(!r.ok)throw new Error('Error '+r.status+' en '+table);
+  return r.json();
 }
 async function sbInsert(table,data){
-  const r=await fetch(`${SUPA}/rest/v1/${table}`,{method:'POST',headers:H,body:JSON.stringify(data)});
+  const r=await fetch(`${PROXY}/api?table=${table}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
   if(!r.ok)throw new Error(await r.text());return r.json();
 }
 async function sbUpdate(table,col,val,data){
-  const r=await fetch(`${SUPA}/rest/v1/${table}?${col}=eq.${val}`,{method:'PATCH',headers:H,body:JSON.stringify(data)});
+  const r=await fetch(`${PROXY}/api?table=${table}&filter=${col}=eq.${val}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
   if(!r.ok)throw new Error(await r.text());return r.json();
 }
 async function sbDelete(table,col,val){
-  const r=await fetch(`${SUPA}/rest/v1/${table}?${col}=eq.${val}`,{method:'DELETE',headers:H});
+  const r=await fetch(`${PROXY}/api?table=${table}&filter=${col}=eq.${val}`,{method:'DELETE'});
   if(!r.ok)throw new Error(r.status);
 }
 async function uploadFoto(file,numAnimal){
   const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-  const path=`animal_${numAnimal}_${Date.now()}.${ext}`;
-  const r=await fetch(`${SUPA}/storage/v1/object/fotos/${path}`,{
-    method:'POST',
-    headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type},
-    body:file
-  });
+  const fileName=`animal_${numAnimal}_${Date.now()}.${ext}`;
+  const buf=await file.arrayBuffer();
+  const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const r=await fetch(`${PROXY}/upload`,{method:'POST',headers:{'Content-Type':'application/json','x-file-name':fileName,'x-file-type':file.type},body:b64});
   if(!r.ok)throw new Error('Error subiendo foto');
-  return `${SUPA}/storage/v1/object/public/fotos/${path}`;
+  const d=await r.json();return d.url;
 }
 
 // ── Sync ─────────────────────────────────────────────────
