@@ -24,10 +24,6 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'table required' }) };
     }
 
-    let url = `${SUPA}/rest/v1/${table}?select=*`;
-    if (filter) url += `&${filter}`;
-    if (order) url += `&order=${order}`;
-
     const fetchHeaders = {
       'apikey': KEY,
       'Authorization': `Bearer ${KEY}`,
@@ -35,27 +31,30 @@ exports.handler = async (event) => {
       'Prefer': 'return=representation'
     };
 
-    // For DELETE/PATCH add filter
-    let supaUrl = url;
-    if (method === 'DELETE' || method === 'PATCH') {
+    let supaUrl;
+
+    if (method === 'GET') {
+      supaUrl = `${SUPA}/rest/v1/${table}?select=*`;
+      if (order) supaUrl += `&order=${order}`;
+      if (filter) supaUrl += `&${filter}`;
+    } else if (method === 'POST') {
+      supaUrl = `${SUPA}/rest/v1/${table}`;
+    } else if (method === 'PATCH' || method === 'DELETE') {
       supaUrl = `${SUPA}/rest/v1/${table}`;
       if (filter) supaUrl += `?${filter}`;
-    }
-    if (method === 'POST') {
-      supaUrl = `${SUPA}/rest/v1/${table}`;
     }
 
     const response = await fetch(supaUrl, {
       method,
       headers: fetchHeaders,
-      body: method !== 'GET' && method !== 'DELETE' ? event.body : undefined
+      body: (method === 'POST' || method === 'PATCH') ? event.body : undefined
     });
 
     const text = await response.text();
     return {
       statusCode: response.status,
       headers,
-      body: text
+      body: text || '[]'
     };
   } catch (e) {
     return {

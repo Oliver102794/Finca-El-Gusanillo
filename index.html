@@ -496,7 +496,7 @@ async function syncNow(silent=false){
       }catch(e){console.warn('Pending:',e)}
     }
     LC.clearPending();
-    const[A,T,P,F]=await Promise.all([sbGet('animales'),sbGet('tratamientos'),sbGet('partos'),sbGet('fotos_animal','num_animal.asc,created_at.asc')]);
+    const[A,T,P,F]=await Promise.all([sbGet('animales','num.asc'),sbGet('tratamientos','created_at.asc'),sbGet('partos','created_at.asc'),sbGet('fotos_animal','num_animal.asc,created_at.asc')]);
     LC.set('animales',A);LC.set('tratamientos',T);LC.set('partos',P);LC.set('fotos',F);
     setSS('on','Sincronizado ✓');
     renderDash();
@@ -990,7 +990,7 @@ document.getElementById('p-fecha').value=today();
 (async()=>{
   try{
     if(navigator.onLine){
-      const[A,T,P,F]=await Promise.all([sbGet('animales'),sbGet('tratamientos'),sbGet('partos'),sbGet('fotos_animal','num_animal.asc,created_at.asc')]);
+      const[A,T,P,F]=await Promise.all([sbGet('animales','num.asc'),sbGet('tratamientos','created_at.asc'),sbGet('partos','created_at.asc'),sbGet('fotos_animal','num_animal.asc,created_at.asc')]);
       LC.set('animales',A);LC.set('tratamientos',T);LC.set('partos',P);LC.set('fotos',F);
       setSS('on','Sincronizado ✓');
     }else{setSS('off','Sin conexión')}
