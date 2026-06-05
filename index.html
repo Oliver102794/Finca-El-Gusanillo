@@ -496,7 +496,8 @@ async function syncNow(silent=false){
       }catch(e){console.warn('Pending:',e)}
     }
     LC.clearPending();
-    const[A,T,P,F]=await Promise.all([sbGet('animales','num.asc'),sbGet('tratamientos','created_at.asc'),sbGet('partos','created_at.asc'),sbGet('fotos_animal','num_animal.asc,created_at.asc')]);
+    const loadT=async(n,o)=>{try{const r=await fetch(`/.netlify/functions/api?table=${n}&order=${o}`);if(!r.ok)return LC.get(n);return await r.json();}catch(e){return LC.get(n);}};
+    const[A,T,P,F]=await Promise.all([loadT('animales','num.asc'),loadT('tratamientos','created_at.asc'),loadT('partos','created_at.asc'),loadT('fotos_animal','created_at.asc')]);
     LC.set('animales',A);LC.set('tratamientos',T);LC.set('partos',P);LC.set('fotos',F);
     setSS('on','Sincronizado ✓');
     renderDash();
@@ -990,11 +991,28 @@ document.getElementById('p-fecha').value=today();
 (async()=>{
   try{
     if(navigator.onLine){
-      const[A,T,P,F]=await Promise.all([sbGet('animales','num.asc'),sbGet('tratamientos','created_at.asc'),sbGet('partos','created_at.asc'),sbGet('fotos_animal','num_animal.asc,created_at.asc')]);
+      // Load each table independently so one failure doesn't break everything
+      const loadTable = async(name,order)=>{
+        try{
+          const r=await fetch(`/.netlify/functions/api?table=${name}&order=${order}`);
+          if(!r.ok){console.warn(name+' error:',r.status);return[]}
+          return await r.json();
+        }catch(e){console.warn(name+' failed:',e.message);return[]}
+      };
+      const[A,T,P,F]=await Promise.all([
+        loadTable('animales','num.asc'),
+        loadTable('tratamientos','created_at.asc'),
+        loadTable('partos','created_at.asc'),
+        loadTable('fotos_animal','created_at.asc')
+      ]);
       LC.set('animales',A);LC.set('tratamientos',T);LC.set('partos',P);LC.set('fotos',F);
+      const ok=[A,T,P,F].filter(x=>x.length>=0).length;
       setSS('on','Sincronizado ✓');
     }else{setSS('off','Sin conexión')}
-  }catch(e){setSS('off','Error: '+e.message.slice(0,50));console.error(e);const d=document.getElementById('alertas');if(d)d.innerHTML='<div style="font-size:12px;color:#b83232;padding:10px;background:#fdeaea;border-radius:8px;word-break:break-all"><strong>Error:</strong> '+e.message+'<br><strong>Online:</strong> '+navigator.onLine+'<br><strong>Supa:</strong> '+SUPA+'</div>';}
+  }catch(e){
+    setSS('off','Error: '+e.message.slice(0,40));
+    console.error(e);
+  }
   renderDash();
   document.getElementById('loading').classList.add('hide');
 })();
