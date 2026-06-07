@@ -131,6 +131,8 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
 .foto-card{border-radius:var(--rs);overflow:hidden;position:relative;background:var(--sur2);aspect-ratio:1;cursor:pointer}
 .foto-card img{width:100%;height:100%;object-fit:cover;display:block}
 .foto-card-date{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:10px;padding:14px 6px 5px;text-align:center}
+.foto-del-btn{position:absolute;top:6px;right:6px;background:rgba(184,50,50,.85);color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;backdrop-filter:blur(4px)}
+.foto-del-btn:active{background:var(--r)}
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;align-items:center;justify-content:center;flex-direction:column}
 .lightbox.open{display:flex}
 .lightbox img{max-width:95vw;max-height:80vh;object-fit:contain;border-radius:var(--rs)}
@@ -633,7 +635,12 @@ function verFicha(num){
       <div><div class="pcria">Cría # ${p.cria}${p.sexo?' — '+p.sexo:''}</div><div class="pmeta">${fmtD(p.fecha)}</div></div>
       ${p.obs?`<div style="font-size:11px;color:var(--tx3);max-width:45%;text-align:right">${p.obs}</div>`:''}</div>`).join('');
   const fHTML=!myF.length?'<div style="text-align:center;padding:20px;color:var(--tx3);font-size:13px"><i class="ti ti-photo" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px"></i>Sin fotos</div>'
-    :`<div class="foto-grid">${myF.map(f=>`<div class="foto-card" onclick="openLightbox('${f.foto_url}','${fmtD(f.fecha)}${f.descripcion?' — '+f.descripcion:''}')"><img src="${f.foto_url}" loading="lazy"><div class="foto-card-date">${fmtD(f.fecha)}</div></div>`).join('')}</div>`;
+    :`<div class="foto-grid">${myF.map(f=>`
+      <div class="foto-card">
+        <img src="${f.foto_url}" loading="lazy" onclick="openLightbox('${f.foto_url}','${fmtD(f.fecha)}${f.descripcion?' — '+f.descripcion:''}')">
+        <div class="foto-card-date">${fmtD(f.fecha)}</div>
+        <button onclick="eliminarFoto('${f.id}',${num})" class="foto-del-btn" title="Eliminar foto"><i class="ti ti-trash"></i></button>
+      </div>`).join('')}</div>`;
   document.getElementById('modal-ficha-body').innerHTML=`
     <div class="fhero">
       <div class="fhero-img-wrap">${heroImg}
@@ -698,6 +705,22 @@ function switchTab(btn,tabId){
   pad.querySelectorAll('.mtab-content').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(tabId).classList.add('active');
+}
+
+async function eliminarFoto(fotoId, numAnimal){
+  if(!confirm('¿Eliminar esta foto?')) return;
+  try{
+    await sb.from('fotos_animal').delete().eq('id', fotoId);
+    // Update cover photo to next available
+    const {data:fotos} = await sb.from('fotos_animal').select('foto_url').eq('num_animal', numAnimal).order('created_at', {ascending:false});
+    const newCover = fotos && fotos.length > 0 ? fotos[0].foto_url : null;
+    await sb.from('animales').update({foto_url: newCover}).eq('num', numAnimal);
+    await syncNow(true);
+    closeModal('modal-ficha');
+    verFicha(numAnimal);
+    openModal('modal-ficha');
+    toast('Foto eliminada ✓');
+  }catch(e){ toast('Error al eliminar foto','err'); console.error(e) }
 }
 
 function openLightbox(url,info){document.getElementById('lb-img').src=url;document.getElementById('lb-info').textContent=info||'';document.getElementById('lightbox').classList.add('open')}
